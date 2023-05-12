@@ -9,127 +9,106 @@ int is_letter(char c)
 
 int slen(char *str)
 {
+    if(str == NULL)
+        return 0;
     int i = 0;
     while(str[i] != '\0')
         i++;
     return i;
 }
 
-int sspn(char c)
+int sspn(char *str1, char *str2)
 {
-    if(c == '"' || c == '*' || c == ':' || c == '<' || c == '>' || c == '?' || c == '\\' || c == '|')
+    if(str1 == NULL || str2 == NULL)
         return -1;
-    return 0;
+    int size1 = slen(str1), size2 = slen(str2);
+    for(int i = 0; i < size1; i++)
+    {
+        for(int j = 0; j < size2; j++)
+        {
+            if(str1[i] == str2[j])
+                return i;
+        }
+    }
+    return size1;
 }
+
 
 int scmp(char *str1, char *str2)
 {
-    int j = 0, size_str1, size_str2;
+    int size1 = slen(str1), size2 = slen(str2), size;
 
-    size_str1 = slen(str1);
-    size_str2 = slen(str2);
+    if(size1 > size2)
+        size = size1;
+    else
+        size = size2;
 
-    for(int i = 0; i < size_str1; i++)
-    {
-        if(str1[i] == str2[j])
-        {
-            i++;
-            j++;
-            while(str1[i] == str2[j] && j < size_str2)
-            {
-                i++;
-                j++;
-            }
-            if((j + 1) == size_str2)
-                return i - j;
-        }
-    }
-
-    return -1;
-}
-
-char *scpy(char *str, int i)
-{
-    int j = 0, size = 64, k = 2;      
-    char *strcpy;
-
-    strcpy = calloc(sizeof(char), size);
-    if(strcpy == NULL)
-        return NULL;
-
-    while(str[i] != '\0')
-    {
-        strcpy[j] = str[i];
-        i++;
-        j++;
-        if(j == size - 1)
-        {
-            strcpy = realloc(str, sizeof(char) * size * k);
-            size *= 2;
-            if(strcpy == NULL)
-                return NULL;
-        }
-    }
-    strcpy[j] = '\0';
-
-    return strcpy;
-}
-
-int stok(char *str, char sim)
-{
-    int size, change = 1;
-    size = slen(str);
     for(int i = 0; i < size; i++)
     {
-        if(str[i] == sim)
-        {
-            str[i] = '\0';
-            change++;
-        }
+        if(str1[i] != str2[i])
+            return str1[i] - str2[i];
     }
-    return change;
+    return 0;
 }
 
-char *concat(char *str1, char *str2, char sim)
+char *scpy(char *dest, char *src)
 {
-    char *concat;
-    int size1, size2, sizecat = 64, i = 0, k = 2;
-    size1 = slen(str1);
-    size2 = slen(str2);
-
-    if(str1 == NULL || str2 == NULL)
+    if(src == NULL || dest == NULL)
         return NULL;
+
+    int size = slen(src);
+    for(int i = 0; i < size; i++)
+        dest[i] = src[i];
+    dest[size] = '\0';
+    return dest;
+}
+
+int scout(char *str, char delim)
+{
+    if(str == NULL)
+        return -1;
+
+    int cout = 0, size = slen(str);
+    for(int i = 0; i < size; i++)
+    {
+        if(str[i] == delim)
+            cout++;
+    }
+    return cout;
+}
+
+char *stok(char *str, char delim)
+{
+    if(str == NULL)
+        return NULL;
+
+    int size = slen(str);
+    for(int i = 0; i < size + 1; i++)
+    {
+        if(str[i] == delim)
+        {
+            str[i] = '\0';
+            return str;
+        }
+        else if(str[i] == '\0')
+            return str;
+    }
     
-    concat = calloc(sizeof(char), sizecat);
-    if(concat == NULL)
+    return NULL;
+}
+
+char *concat (char *dest, char *append)
+{
+    if(dest == NULL || append == NULL)
         return NULL;
 
-    for(i = 0; i < size1; i++)
+    int size_dest = slen(dest);
+    int size_append = slen(append);
+    int j = 0;
+    for(int i = size_dest; i < size_dest + size_append; i++)
     {
-        concat[i] = str1[i];
-         if(i == sizecat - 1)
-        {
-            concat = realloc(concat, sizeof(char) * sizecat * k);
-            sizecat *= k;
-            if(concat == NULL)
-                return NULL;
-        }
+        dest[i] = append[j];
+        j++;
     }
-    for(int j = 0; j < size2; j++)
-    {
-        if(str2[j] == sim)
-            continue;
-        concat[i] = str2[j];
-        i++;
-        if(i == sizecat - 1)
-        {
-            concat = realloc(concat, sizeof(char) * sizecat * k);
-            sizecat *= k;
-            if(concat == NULL)
-                return NULL;
-        }
-    }
-    concat[i] = '\0';
-
-    return concat;
+    return dest;
 }

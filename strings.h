@@ -2,12 +2,14 @@ int is_letter(char c);
 
 int slen(char *str);
 
-int sspn(char c);
+int sspn(char *str1, char *str2);
 
 int scmp(char *str1, char *str2);
 
-char *scpy(char *str, int i);
+char *scpy(char *dest, char *src);
 
-int stok(char *str, char sim);
+int scout(char *str, char delim);
 
-char *concat(char *str1, char *str2, char sim);
+char *stok(char *str, char sim);
+
+char *concat (char *dest, char *append);

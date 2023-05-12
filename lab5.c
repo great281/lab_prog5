@@ -23,65 +23,77 @@ char *input()
         return NULL;
     while((c = getchar()) != '\n')
     {
-        str[i] = c;
-        i++;
-        if(i == size - 1)
+        if(i == size)
         {
             str = realloc(str, sizeof(char) * size * k);
             size *= 2;
             if(str == NULL)
                 return NULL;
         }
+        str[i] = c;
+        i++;
     }
     str[i] = '\0';
     return str;
 }
 
-int check(char *str, int *num)
+int check(char *str, int *num, char delim)
 {
-    int i = 0;
+    int i, path_i = 0;
+    char *sim = "\"*:<>?\\|";
     if(str == NULL)
         return -4;
+    if((i = sspn(str, sim)) != slen(str))
+    {
+        *num = i;
+        return -3;
+    }
+    i = 0;
     while(str[i] != '\0')
     {
-        if(i == MAX_PATH)
+        if(str[i] == delim)
+            path_i = 0;
+        if(path_i == MAX_PATH)
             return -1;
         if(str[i] == ':' && (is_letter(str[i - 1]) == -1 || str[i + 1] != '/'))
             return -2;
-        if(sspn(str[i]) == -1)
-            return -3;
-        
+        path_i++;
         *num = ++i;
     }
     return 0;
 }
 
-char **procces(char *dir, char *str, char delim, int *i)
+char **process(char *dir, char *str, char delim, int *i)
 {
-    char **new_paths;
-    int size_str = slen(str), change, change_it = 0, last = 0;
+    char **new_paths, *copy_dir = NULL, *tok = NULL;
+    int size_str, change, index = 0;
 
-    change = stok(str, delim);
+    change = scout(str, delim) + 1;
 
     new_paths = malloc(sizeof(char *) * change);
         
-    for(int j = 0; j < size_str; j++)
+    for(int i = 0; i < change; i++)
     {
-        if(str[j] == '\0')
-        {
-            new_paths[change_it] = scpy(str, last);
-            last = j + 1;
-            change_it++;
-        }
+        tok = stok(&str[index], delim);
+        size_str = slen(tok);
+        new_paths[i] = malloc(sizeof(char) * (size_str + 1));
+        new_paths[i] = scpy(new_paths[i], tok);
+        index += size_str + 1;
     }
-    new_paths[change_it] = scpy(str, last);
 
     for(int i = 0; i < change; i++)
     {
         for(int j = 0; new_paths[i][j] != '\0'; j++)
         {
             if(new_paths[i][j] == '~' && new_paths[i][j + 1] == '/')
-                new_paths[i] = concat(dir, new_paths[i], '~');
+            {
+                copy_dir = malloc(sizeof(char) * (slen(dir) + slen(&new_paths[i][j + 1])));
+                copy_dir = scpy(copy_dir, dir);
+                copy_dir = concat(copy_dir, &new_paths[i][j + 1]);
+                free(new_paths[i]);
+                new_paths[i] = copy_dir;
+                copy_dir = NULL;
+            }
         }
     }
     *i = change - 1;
@@ -137,15 +149,10 @@ int main()
 
     printf("user name: ");
     name = input();
-    if((check_str = check(name, &i)) != 0)
-    {
-        output_error(name, check_str, i);
-        return -1;
-    }
 
     printf("dir: ");
     dir = input();
-    if((check_str = check(dir, &i)) != 0)
+    if((check_str = check(dir, &i, delim)) != 0)
     {
         output_error(dir, check_str, i);
         return -1;
@@ -153,16 +160,16 @@ int main()
 
     printf("paths: ");
     paths = input();
-    if((check_str = check(paths, &i)) != 0)
+    if((check_str = check(paths, &i, delim)) != 0)
     {
         output_error(paths, check_str, i);
         return -1;
     }
 
-    new_paths = procces(dir, paths, delim, &size);
+    new_paths = process(dir, paths, delim, &size);
     for(int j = 0; j < size; j++)
     {
-        if((check_str = check(new_paths[j], &i)) != 0)
+        if((check_str = check(new_paths[j], &i, delim)) != 0)
         {
             output_error(new_paths[j], check_str, i);
             return -1;
